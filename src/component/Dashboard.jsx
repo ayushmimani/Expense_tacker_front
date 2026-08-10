@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import PieChartComponent from "../component/Piechart";
 import Barchartcomponent from "../component/Barchart";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,7 +8,26 @@ const Dashboard = () => {
   const [showmodal, setShowmodal] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
    const [EditId, setEditId] = useState(null);
+   const [data,setdata]=useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  useEffect(()=>{
+    const getdata = async ()=>{
+        try {
+            const response  = await fetch('http://localhost:3000/api/expense/');
+            const result = await response.json();
+            console.log(result);
+            setdata(result);
+        } catch (error) {
+          console.log(error);
+        }
+  }
+  
+    getdata();
+  },[data]);
+
+   
+
 
   const [savedata, setsavedata] = useState({
     amount: "",

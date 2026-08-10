@@ -1,10 +1,12 @@
 import { BarChart,XAxis,YAxis ,Bar} from "recharts"
 //import { categorywise } from "../utils/categaorydata"
-import data from "../utils/fakedata.json";
+// import data from "../utils/fakedata.json";
+import { useSelector } from "react-redux";
 
 const Barchartcomponent = () => {
 
 
+      const expense = useSelector(state=>state.expense.expenses)
     const  getsummary=(data)=>{
 
     //const value = categorywise();
@@ -25,7 +27,7 @@ const Barchartcomponent = () => {
     }
 
 
-    const value = getsummary(data);
+    const value =  expense && getsummary(expense);
  console.log(value);
  
 
