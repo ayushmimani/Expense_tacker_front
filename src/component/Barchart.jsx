@@ -28,7 +28,7 @@ const Barchartcomponent = () => {
 
 
     const value =  expense && getsummary(expense);
- console.log(value);
+ 
  
 
   return (

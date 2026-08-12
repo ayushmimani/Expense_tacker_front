@@ -2,47 +2,85 @@ import { useState,useEffect } from "react";
 import PieChartComponent from "../component/Piechart";
 import Barchartcomponent from "../component/Barchart";
 import { useDispatch, useSelector } from "react-redux";
-import { addexpense,removeexpense,udpatexpense} from "../Slice/ExpenseSlice";
+import { addexpense,removeexpense,udpatexpense,setexpense} from "../Slice/ExpenseSlice";
+import { toast } from "react-toastify";
+import { downlaodreport } from "../utils/downloadreport";
+
+const apiurl = import.meta.env.VITE_API_URL;
 
 const Dashboard = () => {
+
   const [showmodal, setShowmodal] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
-   const [EditId, setEditId] = useState(null);
-   const [data,setdata]=useState([]);
+  const [EditId, setEditId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  const dispatch = useDispatch();
+
+  // useeffect on page load and set expense in redux
   useEffect(()=>{
     const getdata = async ()=>{
         try {
-            const response  = await fetch('http://localhost:3000/api/expense/');
+            const response  = await fetch(apiurl);
             const result = await response.json();
             console.log(result);
-            setdata(result);
+           dispatch(setexpense(result));
         } catch (error) {
           console.log(error);
         }
   }
   
     getdata();
-  },[data]);
+  },[]);
 
+  const expense = useSelector(state=>state.expense.expenses)
+
+  
+  const handlemodal = () => setShowmodal(true);
+  const closemodal = () => setShowmodal(false);
+  
+  // delete row
+  const openDeleteModal = (id) => {
    
+   setDeleteId(id);
+   setShowDeleteModal(true);
+};
+
+const closeDeleteModal = () => {
+
+  setDeleteId(null);
+  setShowDeleteModal(false);
+};
+
+const confirmDelete = async() => {
+
+
+   const response = await fetch(apiurl+deleteId,{
+    method:"Delete"
+   })
+    const result = await response.json();
+
+  console.log(result);
+  if(result.success){
+    
+     dispatch(removeexpense(deleteId));
+     setDeleteId(null);
+     closeDeleteModal();
+     toast.success("Expense deleted successfully!");
+  }else{
+      toast.error("Something went wrong!");
+  }
+  
+};
+
 
 
   const [savedata, setsavedata] = useState({
     amount: "",
-    category: "",
+    category: "food",
     type: "credit",
   });
 
-  const dispatch = useDispatch();
-
-  const expense = useSelector(state=>state.expense.expenses)
-
-  const handlemodal = () => setShowmodal(true);
-  const closemodal = () => setShowmodal(false);
-  
-  
 
   // handle input change
   const handleChange = (e) => {
@@ -52,40 +90,71 @@ const Dashboard = () => {
     });
   };
 
-  // delete row
-  const openDeleteModal = (id) => {
-  setDeleteId(id);
-  setShowDeleteModal(true);
-};
-
-const closeDeleteModal = () => {
-  setDeleteId(null);
-  setShowDeleteModal(false);
-};
-
-const confirmDelete = () => {
-  dispatch(removeexpense(deleteId));
-  closeDeleteModal();
-};
   // form submit
-  const manageexpense = (e) => {
+  const manageexpense = async(e) => {
     e.preventDefault();
 
     const newExpense = {
-      id: EditId ?? Date.now(),
+     // id: EditId ?? Date.now(),
       amount: Number(savedata.amount),
       category: savedata.category,
       type: savedata.type,
-      date: EditId ? expense.find(item=> item.id==EditId)?.date:new Date().toLocaleDateString(),
+      date: EditId ? expense.find(item=> item._id==EditId)?.date:new Date().toLocaleDateString(),
     };
 
-    if(EditId){
-      dispatch(udpatexpense(newExpense))
-    }else{
-      dispatch(addexpense(newExpense));
-    }
+    console.log(newExpense);
     
 
+    if(EditId){
+      try {
+       
+         const result = await  fetch(apiurl+EditId, 
+          {
+            method:"PUT",
+            headers:{
+              "Content-Type":"application/json",
+            },
+             body:JSON.stringify(newExpense) 
+          }
+         )
+
+         const data = await result.json();
+         if(data.success){
+           
+           dispatch(udpatexpense(newExpense))
+           toast.success("Expense updated successfully!");
+         }else{
+              toast.error(data.message);
+         }
+      } catch (error) {
+        toast.error(error)
+      }
+      
+    }else{
+      try {
+          const result = await fetch(apiurl,{
+            method:'POST',
+            headers:{
+              "Content-Type":"application/json",
+            },
+            body:JSON.stringify(newExpense) 
+            
+          })
+
+            const data = await result.json();
+            if(data.success){
+                 dispatch(addexpense(newExpense));
+                 toast.success("Expense added successfully!");
+            }else{
+              toast.error(data.message);
+            }
+           
+      } catch (error) {
+        toast.error(error);
+        
+      }
+      
+    }
     // reset form
     setsavedata({
       amount: "",
@@ -99,7 +168,7 @@ const confirmDelete = () => {
 
 
   const update = (exoense)=>{
-   setEditId(exoense.id);
+   setEditId(exoense._id);
   
    setsavedata({
   'amount':exoense.amount,
@@ -109,6 +178,15 @@ const confirmDelete = () => {
   setShowmodal(true);
 
   }
+
+    const months = [
+    "Jan","Feb","Mar","Apr","May","Jun",
+    "Jul","Aug","Sep","Oct","Nov","Dec"
+  ];
+
+
+ 
+
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
 
@@ -138,13 +216,41 @@ const confirmDelete = () => {
 
       {/* Table */}
       <div className="bg-white p-4 rounded shadow">
-        <h2 className="font-semibold mb-4">Recent Transactions</h2>
+    <div className="flex justify-between items-center mb-4">
+  
+  {/* Left: Title */}
+  <h2 className="text-lg font-semibold">Recent Transactions</h2>
 
+  {/* Right: Filters */}
+  <div className="flex items-center gap-2">
+      <button
+          onClick={()=>downlaodreport(expense)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow"
+        >
+           Download 
+        </button>
+    <span className="text-sm text-gray-600">Filter:</span>
+
+    <select className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <option value="">All</option>
+        {months.map((month,index)=>{
+          return(
+            <option key ={index} value={month}>{month}</option>
+          )
+        })}
+    </select>
+
+ 
+  </div>
+
+</div>
+      
         <div className="overflow-x-auto">
           <table className="w-full border border-gray-200 rounded">
             <thead className="bg-gray-200 text-left">
               <tr>
-                <th className="p-2">#</th>
+                <th>#</th>
+                <th className="p-2">Sr .no</th>
                 <th className="p-2">Amount</th>
                 <th className="p-2">Category</th>
                 <th className="p-2">Type</th>
@@ -154,8 +260,10 @@ const confirmDelete = () => {
             </thead>
 
             <tbody>
+             
               {expense.map((d, index) => (
-                <tr key={d.id} className="border-t hover:bg-gray-50">
+                <tr key={d._id} className="border-t hover:bg-gray-50">
+                  <td><checkbox></checkbox></td>
                   <td className="p-2">{index + 1}</td>
                   <td className="p-2 font-medium">₹{d.amount}</td>
                   <td className="p-2">{d.category}</td>
@@ -178,7 +286,7 @@ const confirmDelete = () => {
                     <button onClick={()=>update(d)} className="bg-green-500 text-white px-2 py-1 rounded text-sm">
                       Edit
                     </button>
-                    <button onClick={()=>openDeleteModal(d.id)}  className="bg-red-500 text-white px-2 py-1 rounded text-sm">
+                    <button onClick={()=>openDeleteModal(d._id)}  className="bg-red-500 text-white px-2 py-1 rounded text-sm">
                       Delete
                     </button>
                   </td>
@@ -215,7 +323,7 @@ const confirmDelete = () => {
               <div>
                 <label className="block text-sm mb-1">Category</label>
                 <select
-                  name="type"
+                  name="category"
                   value={savedata.type}
                   onChange={handleChange}
                   className="w-full border p-2"

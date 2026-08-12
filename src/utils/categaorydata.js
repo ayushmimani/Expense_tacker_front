@@ -1,11 +1,11 @@
+// import data from "../utils/fakedata.json";
+export const categorywise = (expense)=>{
 
-import data from "../utils/fakedata.json";
-export const categorywise =()=>{
-
+    
 
     const result={};
 
-    data.forEach(item=>{
+    expense.forEach(item=>{
         if(item.type==='debit'){
             result[item.category] =(result[item.category] ||0 )+ item.amount;
         }

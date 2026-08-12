@@ -1,11 +1,13 @@
 import { PieChart,Pie,Tooltip} from "recharts";
 
 import { categorywise } from "../utils/categaorydata";
+import { useSelector } from "react-redux";
 
 
 export default  function PieChartComponent() {
-
-    const value = categorywise();
+    const expense = useSelector(state=>state.expense.expenses)
+    
+    const value = categorywise(expense);
     // const COLORS = [
     // "#0088FE",
     // "#00C49F",
@@ -24,7 +26,7 @@ export default  function PieChartComponent() {
                 ? "#00C46F"
                 : "#FF8042"
     }));
-    console.log(value);
+  
     
     return <>
      <PieChart width={400} height={400}>
