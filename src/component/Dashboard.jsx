@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addexpense,removeexpense,udpatexpense,setexpense} from "../Slice/ExpenseSlice";
 import { toast } from "react-toastify";
 import { downlaodreport } from "../utils/downloadreport";
+import { uploadexpense } from "../utils/uploadexpense";
 
 const apiurl = import.meta.env.VITE_API_URL;
 
@@ -185,6 +186,34 @@ const confirmDelete = async() => {
   ];
 
 
+  // upload 
+
+  const uploadToServer = async(uploaddata)=>{
+
+  try {
+  
+    const response = await fetch(apiurl+'bulk',{
+      method:'post',
+      headers:{
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify({expenses :uploaddata})
+
+    })
+
+      const result = await  response.json()
+
+      if(result.success){
+        dispatch(setexpense(...expense,...uploaddata))
+        toast.success("Bulk expenses uploded successfully")
+      }else{
+        toast.error(result.message);
+      }
+    } 
+    catch (error) {
+      toast.error(error)
+    }
+  }
  
 
   return (
@@ -223,13 +252,18 @@ const confirmDelete = async() => {
 
   {/* Right: Filters */}
   <div className="flex items-center gap-2">
-      <button
-          onClick={()=>downlaodreport(expense)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow"
-        >
-           Download 
+        <button
+            onClick={()=>downlaodreport(expense)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow"
+          >
+            Download 
         </button>
-    <span className="text-sm text-gray-600">Filter:</span>
+
+        <div>
+           <input type="file" name="uploadexpense" onChange={(e)=>uploadexpense(e,uploadToServer)}/>
+        </div>
+        
+     <span className="text-sm text-gray-600">Filter:</span>
 
     <select className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
       <option value="">All</option>
