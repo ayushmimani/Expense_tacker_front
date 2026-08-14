@@ -9,7 +9,9 @@ export const uploadexpense = (e,uploadToServer) =>{
 
   const file = e.target.files[0];
  
-   if(!file) return;
+   if(!file) {
+return
+   }
 
        const reader = new FileReader();
 
@@ -17,7 +19,7 @@ export const uploadexpense = (e,uploadToServer) =>{
        reader.onload =(event)=>{
         const text =event.target.result;
 
-        const rows = text.split('/n').map(row=>row.split(','));
+        const rows = text.split('\n').map(row=>row.split(','));
 
          const data = rows.slice(1);
 
@@ -25,9 +27,12 @@ export const uploadexpense = (e,uploadToServer) =>{
             amount:Number(row[0]),
             category:row[1],
             type:row[2],
-            date: Date.now()
+            date: new Date().toLocaleDateString()
          }))
 
+       
+       
+       
         
         uploadToServer(expenses);
 

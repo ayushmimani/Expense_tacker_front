@@ -4,15 +4,15 @@ import Barchartcomponent from "../component/Barchart";
 import { useDispatch, useSelector } from "react-redux";
 import { addexpense,removeexpense,udpatexpense,setexpense} from "../Slice/ExpenseSlice";
 import { toast } from "react-toastify";
-import { downlaodreport } from "../utils/downloadreport";
-import { uploadexpense } from "../utils/uploadexpense";
+import FilterComponent from "./FilterComponent";
+
 
 const apiurl = import.meta.env.VITE_API_URL;
 
 const Dashboard = () => {
 
   const [showmodal, setShowmodal] = useState(false);
-  const [deleteId, setDeleteId] = useState(null);
+  const [deleteId, setDeleteId] = useState([]);
   const [EditId, setEditId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -43,21 +43,29 @@ const Dashboard = () => {
   // delete row
   const openDeleteModal = (id) => {
    
-   setDeleteId(id);
+//if(deleteId.length===0 && id=='' )  return;
+
+   setDeleteId([id]);
    setShowDeleteModal(true);
 };
 
 const closeDeleteModal = () => {
 
-  setDeleteId(null);
+  setDeleteId([]);
   setShowDeleteModal(false);
 };
 
 const confirmDelete = async() => {
 
 
-   const response = await fetch(apiurl+deleteId,{
-    method:"Delete"
+   const response = await fetch(apiurl,{
+    method:"Delete",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+      ids:deleteId
+    })
    })
     const result = await response.json();
 
@@ -65,7 +73,7 @@ const confirmDelete = async() => {
   if(result.success){
     
      dispatch(removeexpense(deleteId));
-     setDeleteId(null);
+     setDeleteId([]);
      closeDeleteModal();
      toast.success("Expense deleted successfully!");
   }else{
@@ -73,8 +81,6 @@ const confirmDelete = async() => {
   }
   
 };
-
-
 
   const [savedata, setsavedata] = useState({
     amount: "",
@@ -102,8 +108,6 @@ const confirmDelete = async() => {
       type: savedata.type,
       date: EditId ? expense.find(item=> item._id==EditId)?.date:new Date().toLocaleDateString(),
     };
-
-    console.log(newExpense);
     
 
     if(EditId){
@@ -144,7 +148,7 @@ const confirmDelete = async() => {
 
             const data = await result.json();
             if(data.success){
-                 dispatch(addexpense(newExpense));
+                  dispatch(addexpense(newExpense));
                  toast.success("Expense added successfully!");
             }else{
               toast.error(data.message);
@@ -180,41 +184,18 @@ const confirmDelete = async() => {
 
   }
 
-    const months = [
-    "Jan","Feb","Mar","Apr","May","Jun",
-    "Jul","Aug","Sep","Oct","Nov","Dec"
-  ];
-
-
-  // upload 
-
-  const uploadToServer = async(uploaddata)=>{
-
-  try {
-  
-    const response = await fetch(apiurl+'bulk',{
-      method:'post',
-      headers:{
-        'Content-Type':'application/json'
-      },
-      body:JSON.stringify({expenses :uploaddata})
-
-    })
-
-      const result = await  response.json()
-
-      if(result.success){
-        dispatch(setexpense(...expense,...uploaddata))
-        toast.success("Bulk expenses uploded successfully")
+  const ischeck = (id)=>{
+     setDeleteId((prev)=>{
+      if(prev.includes(id)){
+        //  selected to remove
+           return prev.filter(item=>item!=id);
       }else{
-        toast.error(result.message);
+       return [...prev,id];
       }
-    } 
-    catch (error) {
-      toast.error(error)
-    }
+     })
   }
- 
+
+
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -251,31 +232,7 @@ const confirmDelete = async() => {
   <h2 className="text-lg font-semibold">Recent Transactions</h2>
 
   {/* Right: Filters */}
-  <div className="flex items-center gap-2">
-        <button
-            onClick={()=>downlaodreport(expense)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow"
-          >
-            Download 
-        </button>
-
-        <div>
-           <input type="file" name="uploadexpense" onChange={(e)=>uploadexpense(e,uploadToServer)}/>
-        </div>
-        
-     <span className="text-sm text-gray-600">Filter:</span>
-
-    <select className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-      <option value="">All</option>
-        {months.map((month,index)=>{
-          return(
-            <option key ={index} value={month}>{month}</option>
-          )
-        })}
-    </select>
-
- 
-  </div>
+      <FilterComponent openDeleteModal={openDeleteModal}/>
 
 </div>
       
@@ -297,7 +254,9 @@ const confirmDelete = async() => {
              
               {expense.map((d, index) => (
                 <tr key={d._id} className="border-t hover:bg-gray-50">
-                  <td><checkbox></checkbox></td>
+                  <td>
+                    <input type = "checkbox" name="checkbox" checked = {deleteId.includes(d._id)} onChange={()=>ischeck(d._id)}/>
+                  </td>
                   <td className="p-2">{index + 1}</td>
                   <td className="p-2 font-medium">₹{d.amount}</td>
                   <td className="p-2">{d.category}</td>

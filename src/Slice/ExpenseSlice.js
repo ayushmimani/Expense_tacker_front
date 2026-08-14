@@ -21,7 +21,10 @@ const ExpenseSlice = createSlice({
    
         },
         removeexpense :(state,action)=>{
-                state.expenses = state.expenses.filter(item=>item._id!=action.payload)
+
+                //    ids conatian array
+                const ids = action.payload;
+                state.expenses  = state.expenses.filter(item => !ids.includes(item._id))
         }
     },
 })
