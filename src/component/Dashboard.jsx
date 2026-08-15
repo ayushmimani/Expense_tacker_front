@@ -12,6 +12,7 @@ const apiurl = import.meta.env.VITE_API_URL;
 const Dashboard = () => {
 
   const [showmodal, setShowmodal] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [deleteId, setDeleteId] = useState([]);
   const [EditId, setEditId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -44,9 +45,18 @@ const Dashboard = () => {
   const openDeleteModal = (id) => {
    
 //if(deleteId.length===0 && id=='' )  return;
-
-   setDeleteId([id]);
-   setShowDeleteModal(true);
+      if(id){
+      setDeleteId([id]);
+      }else if(selectedIds.length==0){
+        toast.error("Please at least one row to delete")
+        return;
+      }else{
+        setDeleteId(selectedIds);
+      }
+      console.log(deleteId);
+      
+      setShowDeleteModal(true);
+   
 };
 
 const closeDeleteModal = () => {
@@ -56,7 +66,6 @@ const closeDeleteModal = () => {
 };
 
 const confirmDelete = async() => {
-
 
    const response = await fetch(apiurl,{
     method:"Delete",
@@ -91,6 +100,8 @@ const confirmDelete = async() => {
 
   // handle input change
   const handleChange = (e) => {
+    
+    
     setsavedata({
       ...savedata,
       [e.target.name]: e.target.value,
@@ -111,6 +122,8 @@ const confirmDelete = async() => {
     
 
     if(EditId){
+    console.log(newExpense);
+    
       try {
        
          const result = await  fetch(apiurl+EditId, 
@@ -136,6 +149,8 @@ const confirmDelete = async() => {
       }
       
     }else{
+  
+      
       try {
           const result = await fetch(apiurl,{
             method:'POST',
@@ -146,9 +161,13 @@ const confirmDelete = async() => {
             
           })
 
+
+
             const data = await result.json();
+            console.log(data);
+            
             if(data.success){
-                  dispatch(addexpense(newExpense));
+                  dispatch(addexpense({...newExpense, _id:data.data._id,date:data.data.createdAt}));
                  toast.success("Expense added successfully!");
             }else{
               toast.error(data.message);
@@ -163,7 +182,7 @@ const confirmDelete = async() => {
     // reset form
     setsavedata({
       amount: "",
-      category: "",
+      category: "food",
       type: "credit",
     });
     setEditId(null);
@@ -185,18 +204,29 @@ const confirmDelete = async() => {
   }
 
   const ischeck = (id)=>{
-     setDeleteId((prev)=>{
-      if(prev.includes(id)){
-        //  selected to remove
-           return prev.filter(item=>item!=id);
-      }else{
-       return [...prev,id];
-      }
-     })
+// select ALL OR NOT
+ 
+   if(id==-1){
+    if(selectedIds.length==0){
+         setSelectedIds(()=>expense.map((row)=>(
+           row._id
+        )))
+    }else{
+      //   if all rows selected and click on allselect box than all rows are un select
+      // logically remove all ids from the array
+        setSelectedIds(()=>[]);
+    }
+  //  if single select than this else work
+   }else{
+        setSelectedIds((prev) => {
+        if (prev.includes(id)) {
+          return prev.filter(item => item !== id);
+        }
+
+        return [...prev, id];
+      });
+   }
   }
-
-
-
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
 
@@ -240,7 +270,9 @@ const confirmDelete = async() => {
           <table className="w-full border border-gray-200 rounded">
             <thead className="bg-gray-200 text-left">
               <tr>
-                <th>#</th>
+                <th>
+                  <input type="checkbox" name= "selectall"  onChange={()=>ischeck(-1)} checked = {expense.length !== 0 && expense.length === selectedIds.length}/>
+                </th>
                 <th className="p-2">Sr .no</th>
                 <th className="p-2">Amount</th>
                 <th className="p-2">Category</th>
@@ -253,9 +285,9 @@ const confirmDelete = async() => {
             <tbody>
              
               {expense.map((d, index) => (
-                <tr key={d._id} className="border-t hover:bg-gray-50">
+                <tr key={index} className="border-t hover:bg-gray-50">
                   <td>
-                    <input type = "checkbox" name="checkbox" checked = {deleteId.includes(d._id)} onChange={()=>ischeck(d._id)}/>
+                    <input type = "checkbox" name="checkbox" checked = {selectedIds.includes(d._id)} onChange={()=>ischeck(d._id)}/>
                   </td>
                   <td className="p-2">{index + 1}</td>
                   <td className="p-2 font-medium">₹{d.amount}</td>
@@ -273,7 +305,7 @@ const confirmDelete = async() => {
                     </span>
                   </td>
 
-                  <td className="p-2">{d.date}</td>
+                  <td className="p-2">{new Date(d.date).toLocaleDateString()}</td>
 
                   <td className="p-2 space-x-2">
                     <button onClick={()=>update(d)} className="bg-green-500 text-white px-2 py-1 rounded text-sm">
@@ -317,7 +349,7 @@ const confirmDelete = async() => {
                 <label className="block text-sm mb-1">Category</label>
                 <select
                   name="category"
-                  value={savedata.type}
+                  value={savedata.category}
                   onChange={handleChange}
                   className="w-full border p-2"
                 >
