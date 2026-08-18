@@ -1,10 +1,9 @@
 import { useState,useEffect } from "react";
-import PieChartComponent from "../component/Piechart";
-import Barchartcomponent from "../component/Barchart";
 import { useDispatch, useSelector } from "react-redux";
 import { addexpense,removeexpense,udpatexpense,setexpense} from "../Slice/ExpenseSlice";
 import { toast } from "react-toastify";
 import FilterComponent from "./FilterComponent";
+import Analytics from "./Analytics";
 
 
 const apiurl = import.meta.env.VITE_API_URL;
@@ -101,7 +100,12 @@ const confirmDelete = async() => {
   // handle input change
   const handleChange = (e) => {
     
-    
+    if(e.target.value < 0 ) {
+      alert("add postive number")
+      e.target.value = '';
+    }
+
+
     setsavedata({
       ...savedata,
       [e.target.name]: e.target.value,
@@ -241,18 +245,11 @@ const confirmDelete = async() => {
         </button>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white p-4 rounded shadow">
-          <h2 className="font-semibold mb-2">Category Split</h2>
-          <PieChartComponent />
-        </div>
 
-        <div className="bg-white p-4 rounded shadow">
-          <h2 className="font-semibold mb-2">Credit vs Debit</h2>
-          <Barchartcomponent />
-        </div>
-      </div>
+
+{/* analytics */}
+<Analytics expense={expense}/> 
+ 
 
       {/* Table */}
       <div className="bg-white p-4 rounded shadow">

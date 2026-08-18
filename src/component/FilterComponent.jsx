@@ -5,6 +5,7 @@ import { setexpense} from "../Slice/ExpenseSlice";
 const apiurl = import.meta.env.VITE_API_URL;
 import { toast } from "react-toastify";
 
+
 const FilterComponent = ({openDeleteModal}) => {
     const months = [
         "Jan","Feb","Mar","Apr","May","Jun",
@@ -16,17 +17,35 @@ const FilterComponent = ({openDeleteModal}) => {
 
     // bulk upload
 
-    
+   
 
     // upload 
       const uploadToServer = async (uploaddata) => {
+        console.log(uploaddata);
+
+         const dateToISO =(datestr)=>{
+             if(!datestr) return new Date().toLocaleDateString();
+
+             const [day,month,year] = datestr.split("/");
+
+             return new Date(`${year}-${month.padStart(2,"0")}-${day.padStart(2,0)}`);
+         }
+
+        const updateformat = uploaddata.map((row)=>({
+           ...row,
+           date:dateToISO(row.date)
+        }))
+
+
+        console.log(updateformat);
+        
       try {
         const response = await fetch(apiurl + 'bulk', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ bulkexpense: uploaddata }) // ✅ fixed key
+          body: JSON.stringify({ bulkexpense: updateformat }) // ✅ fixed key
         });
     
         const result = await response.json();
