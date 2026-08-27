@@ -1,4 +1,4 @@
-import { useState,useEffect } from "react";
+import { useState,useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addexpense,removeexpense,udpatexpense,setexpense} from "../Slice/ExpenseSlice";
 import { toast } from "react-toastify";
@@ -15,14 +15,24 @@ const Dashboard = () => {
   const [deleteId, setDeleteId] = useState([]);
   const [EditId, setEditId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [filter,setfilter] =useState({
+      type:'',
+      month:''
+  })
 
   const dispatch = useDispatch();
-
+    const expense = useSelector(state=>state.expense.expenses)
+    const user = useSelector(state=>state.user.data)
+    console.log(user);
+    
   // useeffect on page load and set expense in redux
+
   useEffect(()=>{
+
     const getdata = async ()=>{
+       
         try {
-            const response  = await fetch(apiurl);
+            const response  = await fetch(apiurl,{credentials: "include"});
             const result = await response.json();
             console.log(result);
            dispatch(setexpense(result));
@@ -34,9 +44,30 @@ const Dashboard = () => {
     getdata();
   },[]);
 
-  const expense = useSelector(state=>state.expense.expenses)
+  // filterdata
+  const filterdata = useMemo(()=>{
+          
+    let data = [...expense];
+    
+    if(filter.type) {
+      data =  data.filter((row)=> row.type == filter.type)
+    }         
 
-  
+    if(filter.month){
+        data = data.filter((row)=>{
+          console.log(typeof filter.month);
+          
+          const month = new Date(row.date).getMonth() + 1;
+             console.log(typeof month);
+         return  String(month) ===filter.month
+        })
+      }
+    
+
+    return data;
+
+},[expense,filter])
+
   const handlemodal = () => setShowmodal(true);
   const closemodal = () => setShowmodal(false);
   
@@ -68,6 +99,7 @@ const confirmDelete = async() => {
 
    const response = await fetch(apiurl,{
     method:"Delete",
+    credentials: "include",
     headers:{
       "Content-Type":"application/json"
     },
@@ -133,11 +165,13 @@ const confirmDelete = async() => {
          const result = await  fetch(apiurl+EditId, 
           {
             method:"PUT",
+            credentials: "include",
             headers:{
               "Content-Type":"application/json",
             },
              body:JSON.stringify(newExpense) 
-          }
+          },
+        
          )
 
          const data = await result.json();
@@ -158,6 +192,7 @@ const confirmDelete = async() => {
       try {
           const result = await fetch(apiurl,{
             method:'POST',
+            credentials: "include",
             headers:{
               "Content-Type":"application/json",
             },
@@ -236,7 +271,8 @@ const confirmDelete = async() => {
 
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <h1 className="text-3xl font-bold">Hi, {user.name}</h1>
+        <h3 className="text-2xl font-bold">Dashboard</h3>
         <button
           onClick={handlemodal}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow"
@@ -248,7 +284,7 @@ const confirmDelete = async() => {
 
 
 {/* analytics */}
-<Analytics expense={expense}/> 
+<Analytics expense={filterdata}/> 
  
 
       {/* Table */}
@@ -259,7 +295,7 @@ const confirmDelete = async() => {
   <h2 className="text-lg font-semibold">Recent Transactions</h2>
 
   {/* Right: Filters */}
-      <FilterComponent openDeleteModal={openDeleteModal}/>
+      <FilterComponent openDeleteModal={openDeleteModal}  setfilter={setfilter}/>
 
 </div>
       
@@ -281,7 +317,7 @@ const confirmDelete = async() => {
 
             <tbody>
              
-              {expense.map((d, index) => (
+              {filterdata.map((d, index) => (
                 <tr key={index} className="border-t hover:bg-gray-50">
                   <td>
                     <input type = "checkbox" name="checkbox" checked = {selectedIds.includes(d._id)} onChange={()=>ischeck(d._id)}/>

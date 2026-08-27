@@ -18,3 +18,17 @@
   ## Ye is format ko MM/DD/YYYY samajhne ki koshish karta hai (US style), aur 16 ko month nahi bana sakta (max 12 hota hai) → parsing fail → Invalid Date → Mongoose validation error
 
 # create a custom hook for animation count by using browser api - RequestAnimationFrame   
+
+# fetch main   credentials: "include",  us kret hai or axios main  withCredentials: true, 
+
+# Frontend — credentials: "include" (fetch) ya withCredentials: true (axios) → "main cookie bhejna/receive karna chahta hoon"
+# Backend — cors({ origin: exact_frontend_url, credentials: true }) → "haan main is specific origin ko cookie access permission deta hoon"
+
+
+# install npm install react-router-dom
+
+# install jest supertest
+
+# jest — testing framework (test likhne aur run karne ke liye)
+# supertest — API endpoints ko bina real server chalaye test karne ke liye
+# mongodb-memory-server — fake temporary MongoDB, taaki real database touch na ho

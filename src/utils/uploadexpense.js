@@ -10,7 +10,7 @@ export const uploadexpense = (e,uploadToServer) =>{
   const file = e.target.files[0];
  
    if(!file) {
-return
+      return
    }
 
        const reader = new FileReader();
@@ -37,8 +37,6 @@ return
         uploadToServer(expenses);
 
        }
-
-
     //    read file after complete the reading , triger event above funtion
        reader.readAsText(file);
   
