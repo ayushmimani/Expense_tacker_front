@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { adduser } from "../../Slice/UserSlice";
 //const apiurl = import.meta.env.VITE_API_URL;
+const apiurl = import.meta.env.VITE_API_URL + ;
 const Login = () => {
 
  const [login,setLogin]  = useState({
@@ -30,9 +31,9 @@ const Login = () => {
      e.preventDefault();
  let url;
     if(isnewuser){
-      url = "http://localhost:3000/api/auth/register"
+      url = apiurl+"/auth/register"
     }else{
-      url="http://localhost:3000/api/auth/login/";
+      url = apiurl+"/auth/login/";
     }
 
 

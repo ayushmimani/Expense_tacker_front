@@ -32,3 +32,6 @@
 # jest — testing framework (test likhne aur run karne ke liye)
 # supertest — API endpoints ko bina real server chalaye test karne ke liye
 # mongodb-memory-server — fake temporary MongoDB, taaki real database touch na ho
+
+# Live URL
+- https://expense-tacker-front.vercel.app/
