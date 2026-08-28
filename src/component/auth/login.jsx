@@ -31,9 +31,9 @@ const Login = () => {
      e.preventDefault();
  let url;
     if(isnewuser){
-      url = apiurl+"/auth/register"
+      url = apiurl+"auth/register"
     }else{
-      url = apiurl+"/auth/login/";
+      url = apiurl+"auth/login/";
     }
 
 

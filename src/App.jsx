@@ -17,7 +17,7 @@ function App() {
 useEffect(()=>{
 
   const getuserinfo= async()=>{
-    const userinfo = await fetch (apiurl+"/auth/me",{
+    const userinfo = await fetch (apiurl+"auth/me",{
       method:"POST",
       credentials:"include"
     })
