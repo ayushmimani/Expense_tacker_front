@@ -9,7 +9,7 @@ import ProtectedRoute from './component/ProtectedRoute'
 import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { adduser } from './Slice/UserSlice'
-
+const apiurl = import.meta.env.VITE_API_URL 
 function App() {
 
 
@@ -17,7 +17,7 @@ function App() {
 useEffect(()=>{
 
   const getuserinfo= async()=>{
-    const userinfo = await fetch ("http://localhost:3000/api/auth/me",{
+    const userinfo = await fetch (apiurl+"/auth/me",{
       method:"POST",
       credentials:"include"
     })
