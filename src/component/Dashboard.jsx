@@ -6,7 +6,7 @@ import FilterComponent from "./FilterComponent";
 import Analytics from "./Analytics";
 
 
-const apiurl = import.meta.env.VITE_API_URL;
+const apiurl = import.meta.env.VITE_API_URL + "expense";
 
 const Dashboard = () => {
 
