@@ -30,7 +30,7 @@ useEffect(()=>{
   
   }
 
- // getuserinfo()
+  getuserinfo()
 },[])
 
 
