@@ -48,7 +48,7 @@ const FilterComponent = ({openDeleteModal,setfilter}) => {
         console.log(updateformat);
         
       try {
-        const response = await fetch(apiurl + 'bulk', {
+        const response = await fetch(apiurl + 'expense/bulk', {
           method: 'POST',
           credentials:"include",
           headers: {
