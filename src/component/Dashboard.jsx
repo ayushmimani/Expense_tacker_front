@@ -7,7 +7,7 @@ import Analytics from "./Analytics";
 
 
 
-const apiurl = import.meta.env.VITE_API_URL + "expense";
+const apiurl = import.meta.env.VITE_API_URL_PROD + "expense";
 
 const Dashboard = () => {
 

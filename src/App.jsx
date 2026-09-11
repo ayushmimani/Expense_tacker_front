@@ -9,7 +9,7 @@ import ProtectedRoute from './component/ProtectedRoute'
 import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { adduser } from './Slice/UserSlice'
-const apiurl = import.meta.env.VITE_API_URL 
+const apiurl = import.meta.env.VITE_API_URL_PROD 
 function App() {
 
 
